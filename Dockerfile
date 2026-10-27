@@ -30,7 +30,9 @@ RUN set -e; cd /comfyui/custom_nodes; \
 
 # transformers >=4.52 returns no hidden_states from wav2vec2 (breaks InfiniteTalk); pins go last.
 RUN pip install 'kokoro>=0.9.4' 'misaki[ja]' unidic-lite soundfile sageattention==1.0.6 runpod requests \
-    && pip install 'transformers==4.51.3' 'diffusers==0.35.2' 'huggingface_hub<1'
+    && pip install 'transformers==4.51.3' 'diffusers==0.35.2' 'huggingface_hub<1'     && python -m unidic download
+# Japanese G2P smoke test at build time (MeCab dictionary + pyopenjtalk): fails the build, not a paid GPU job.
+RUN python -c "from misaki import ja; print(ja.JAG2P()('ダイソーの温度計を紹介します')[0])"
 
 # Voice cloning (Chatterbox) needs transformers 5.x, which breaks InfiniteTalk: separate venv, same torch/CUDA build
 # so Blackwell (sm_120) GPUs work. Its models download once to HF_HOME on the network volume.
