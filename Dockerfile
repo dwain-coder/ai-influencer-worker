@@ -29,7 +29,7 @@ RUN set -e; cd /comfyui/custom_nodes; \
     node Kosinkadink/ComfyUI-VideoHelperSuite 4d907bee61e9
 
 # transformers >=4.52 returns no hidden_states from wav2vec2 (breaks InfiniteTalk); pins go last.
-RUN pip install 'kokoro>=0.9.4' 'misaki[ja]' soundfile sageattention==1.0.6 runpod requests \
+RUN pip install 'kokoro>=0.9.4' 'misaki[ja]' unidic-lite soundfile sageattention==1.0.6 runpod requests \
     && pip install 'transformers==4.51.3' 'diffusers==0.35.2' 'huggingface_hub<1'
 
 # Voice cloning (Chatterbox) needs transformers 5.x, which breaks InfiniteTalk: separate venv, same torch/CUDA build
