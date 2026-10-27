@@ -13,7 +13,8 @@ import folder_paths
 SAMPLE_RATE = 24000
 VOICES = ["am_puck", "am_michael", "am_fenrir", "am_adam", "am_echo", "am_eric", "am_liam", "am_onyx",
           "af_heart", "af_bella", "af_nicole", "af_sarah", "af_sky", "af_nova", "af_river", "af_jessica",
-          "bm_george", "bm_lewis", "bm_daniel", "bf_emma", "bf_isabella", "bf_alice"]
+          "bm_george", "bm_lewis", "bm_daniel", "bf_emma", "bf_isabella", "bf_alice",
+          "jm_kumo", "jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro"]  # j = Japanese (needs misaki[ja])
 _pipelines = {}
 
 
@@ -41,7 +42,7 @@ class KokoroTTS:
     CATEGORY = "audio"
 
     def speak(self, text, voice, speed, filename_prefix):
-        # Voice prefix letter is the language: a = American, b = British.
+        # Voice prefix letter is the language: a = American, b = British, j = Japanese.
         pipe = _pipeline(voice[0])
         chunks, words, offset = [], [], 0.0
         for result in pipe(text, voice=voice, speed=speed):
