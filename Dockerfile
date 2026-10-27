@@ -32,7 +32,18 @@ RUN set -e; cd /comfyui/custom_nodes; \
 RUN pip install 'kokoro>=0.9.4' soundfile sageattention==1.0.6 runpod requests \
     && pip install 'transformers==4.51.3' 'diffusers==0.35.2' 'huggingface_hub<1'
 
+# Voice cloning (Chatterbox) needs transformers 5.x, which breaks InfiniteTalk: separate venv, same torch/CUDA build
+# so Blackwell (sm_120) GPUs work. Its models download once to HF_HOME on the network volume.
+RUN python3.11 -m venv /opt/tts-venv && /opt/tts-venv/bin/pip install --upgrade pip \
+    && /opt/tts-venv/bin/pip install torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128 \
+    && printf 'torch==2.8.0\ntorchaudio==2.8.0\n' > /tmp/tts-constraints.txt \
+    && /opt/tts-venv/bin/pip install chatterbox-tts==0.1.7 --no-deps \
+    && /opt/tts-venv/bin/pip install -c /tmp/tts-constraints.txt 'numpy<2' librosa==0.11.0 s3tokenizer transformers==5.2.0 \
+         diffusers==0.29.0 'resemble-perth>=1.0.0' conformer==0.3.2 safetensors==0.5.3 spacy-pkuseg pykakasi==2.3.0 \
+         pyloudnorm omegaconf soundfile
+
 COPY kokoro_tts /comfyui/custom_nodes/kokoro_tts
+COPY chatterbox_tts /comfyui/custom_nodes/chatterbox_tts
 COPY handler.py /handler.py
 
 CMD ["python", "-u", "/handler.py"]
