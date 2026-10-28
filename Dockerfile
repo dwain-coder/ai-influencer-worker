@@ -26,7 +26,8 @@ RUN set -e; cd /comfyui/custom_nodes; \
     node cubiq/ComfyUI_IPAdapter_plus a0f451a5113c; \
     node kijai/ComfyUI-WanVideoWrapper 088128b22424; \
     node kijai/ComfyUI-KJNodes 37ca7aff7ed1; \
-    node Kosinkadink/ComfyUI-VideoHelperSuite 4d907bee61e9
+    node Kosinkadink/ComfyUI-VideoHelperSuite 4d907bee61e9; \
+    node numz/ComfyUI-SeedVR2_VideoUpscaler 4490bd1f482e
 
 # transformers >=4.52 returns no hidden_states from wav2vec2 (breaks InfiniteTalk); pins go last.
 RUN pip install 'kokoro>=0.9.4' 'misaki[ja]' unidic-lite soundfile sageattention==1.0.6 runpod requests \
