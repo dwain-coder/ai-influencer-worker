@@ -1,4 +1,4 @@
-# RunPod Serverless worker: ComfyUI + Wan/InfiniteTalk + Kokoro TTS + IPAdapter + VHS.
+# RunPod Serverless worker: ComfyUI + Wan/InfiniteTalk + Kokoro/Chatterbox/Qwen3 TTS + IPAdapter + VHS.
 # Models are NOT in the image: they live on the network volume (/runpod-volume/ComfyUI/models).
 FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04
 
@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     HF_HOME=/runpod-volume/hf PATH=/opt/venv/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      software-properties-common git ffmpeg espeak-ng libgl1 libglib2.0-0 curl ca-certificates build-essential \
+      software-properties-common git ffmpeg sox espeak-ng libgl1 libglib2.0-0 curl ca-certificates build-essential \
     && add-apt-repository -y ppa:deadsnakes/ppa && apt-get update \
     && apt-get install -y --no-install-recommends python3.11 python3.11-venv python3.11-dev \
     && rm -rf /var/lib/apt/lists/* \
@@ -45,8 +45,16 @@ RUN python3.11 -m venv /opt/tts-venv && /opt/tts-venv/bin/pip install --upgrade 
          diffusers==0.29.0 'resemble-perth>=1.0.0' conformer==0.3.2 safetensors==0.5.3 spacy-pkuseg pykakasi==2.3.0 \
          pyloudnorm omegaconf soundfile
 
+# Qwen3-TTS voice cloning (Apache-2.0) pins transformers 4.57: its own venv, same torch/CUDA build.
+# Import check fails the build, not a paid GPU job. Models download once to HF_HOME on the network volume.
+RUN python3.11 -m venv /opt/qwen-tts-venv && /opt/qwen-tts-venv/bin/pip install --upgrade pip \
+    && /opt/qwen-tts-venv/bin/pip install torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128 \
+    && /opt/qwen-tts-venv/bin/pip install -c /tmp/tts-constraints.txt qwen-tts==0.1.1 \
+    && /opt/qwen-tts-venv/bin/python -c "from qwen_tts import Qwen3TTSModel; print('qwen_tts ok')"
+
 COPY kokoro_tts /comfyui/custom_nodes/kokoro_tts
 COPY chatterbox_tts /comfyui/custom_nodes/chatterbox_tts
+COPY qwen3_tts /comfyui/custom_nodes/qwen3_tts
 COPY handler.py /handler.py
 
 CMD ["python", "-u", "/handler.py"]
